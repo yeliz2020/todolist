@@ -1,3 +1,16 @@
+let todo_list = [];
+
+todo_list = JSON.parse(localStorage.getItem("list"));
+if (todo_list.length > 0) {
+    for (let i = 0; i < todo_list.length; i++) {
+        let item = todo_list[i];
+        const li = document.createElement("li");
+        li.innerHTML = item;
+
+        document.querySelector("#list").appendChild(li);
+    }
+}
+
 function createSpan() {
     let ul = document.getElementById("list");
     let items = ul.getElementsByTagName("li");
@@ -9,7 +22,6 @@ function createSpan() {
         items[i].appendChild(xSpanDOM); //add spans in li elements
     }
 }
-
 
 function close() {
     let closeItem = document.querySelectorAll(".close");
@@ -24,11 +36,8 @@ function close() {
     });
 }
 
-
-
 createSpan();
 close();
-
 
 // List Item Marking
 let todoCheck = document.querySelector("ul");
@@ -50,6 +59,8 @@ function newElement() {
     } else {
         $(".success").toast("show");
         document.querySelector("#list").appendChild(liDOM);
+        todo_list.push(inputVal); //add it to list
+        localStorage.setItem("list", JSON.stringify(todo_list));
     }
     document.querySelector("#task").value = "";
 
