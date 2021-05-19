@@ -1,73 +1,89 @@
-let todo_list = [];
+let inputBar = document.querySelector("#task");
+let ulDOM = document.getElementById("list");
 
-todo_list = JSON.parse(localStorage.getItem("list"));
-if (todo_list.length > 0) {
-    for (let i = 0; i < todo_list.length; i++) {
-        let item = todo_list[i];
-        const li = document.createElement("li");
-        li.innerHTML = item;
+listeners();
 
-        document.querySelector("#list").appendChild(li);
+function listeners() {
+    ulDOM.addEventListener(
+        "click",
+        function(ev) {
+            if (ev.target.tagName === "LI") {
+                ev.target.classList.toggle("checked");
+            }
+        },
+        false
+    );
+    document.addEventListener("DOMContentLoaded", loadAllTodos);
+    ulDOM.addEventListener("click", deleteTodo);
+}
+
+function deleteTodo(e) {
+    if (e.target.className === "close") {
+        e.target.parentElement.remove();
+        deleteFromLocale(e.target.previousSibling.textContent);
     }
 }
 
-function createSpan() {
-    let ul = document.getElementById("list");
-    let items = ul.getElementsByTagName("li");
-    for (let i = 0; i < items.length; ++i) {
-        // do something with items[i], which is a <li> element
-        let xSpanDOM = document.createElement("span"); // create span
-        xSpanDOM.classList.add("close"); // add class="close" to span
-        xSpanDOM.innerHTML = "x"; // add x inside span
-        items[i].appendChild(xSpanDOM); //add spans in li elements
-    }
+function deleteFromLocale(item) {
+    let todos = getFromLocale();
+    let index = todos.indexOf(item);
+
+    todos.splice(index, 1);
+    localStorage.setItem("todos", JSON.stringify(todos));
 }
 
-function close() {
-    let closeItem = document.querySelectorAll(".close");
-    // Iterate all nodes
-    closeItem.forEach((xSpanDOM) => {
-        // Attach event listener. Note to preserve the button this-reference
-        // by using the non-shorthand function
-        xSpanDOM.addEventListener("click", function() {
-            let li = this.parentNode;
-            li.remove();
-        });
+function newElement() {
+    addTodo();
+}
+
+function loadAllTodos() {
+    let todos = getFromLocale();
+
+    todos.forEach(function(todo) {
+        createListItem(todo);
     });
 }
 
-createSpan();
-close();
 
-// List Item Marking
-let todoCheck = document.querySelector("ul");
-todoCheck.addEventListener("click", function(ev) {
-    if (ev.target.tagName === "LI") {
-        ev.target.classList.toggle("checked");
-    }
-});
+function addTodo() {
+    let newValue = inputBar.value;
 
-//Add To Do Item
-function newElement() {
-    // Selecting the input element and get its value
-    let inputVal = document.querySelector("#task").value;
-    let liDOM = document.createElement("li"); // Create a <li> element
-    liDOM.innerHTML = inputVal;
-    if (inputVal === "" || inputVal.replace(/^\s+|\s+$/g, "").length == 0) {
+    if (newValue === "" || newValue.replace(/^\s+|\s+$/g, "").length == 0) {
         // setting Toast message
         $(".error").toast("show");
     } else {
         $(".success").toast("show");
-        document.querySelector("#list").appendChild(liDOM);
-        todo_list.push(inputVal); //add it to list
-        localStorage.setItem("list", JSON.stringify(todo_list));
+        createListItem(newValue);
+        addToLocale(newValue);
     }
-    document.querySelector("#task").value = "";
+    inputBar.value = "";
+}
 
-    let xSpanDOM = document.createElement("span"); // create span
-    xSpanDOM.classList.add("close"); // add class="close" to span
-    xSpanDOM.innerHTML = "x"; // add x inside span
-    liDOM.appendChild(xSpanDOM); //add spans in li elements
+function createListItem(newValue) {
+    const listItem = document.createElement("li");
+    const spanDOM = document.createElement("span"); // create span
 
-    close();
+    spanDOM.classList.add("close"); // add class="close" to span
+    spanDOM.innerHTML = "x"; // add x inside span
+
+    listItem.appendChild(document.createTextNode(newValue));
+    listItem.appendChild(spanDOM);
+    ulDOM.appendChild(listItem);
+}
+
+function getFromLocale() {
+    let todos;
+
+    if (localStorage.getItem("todos") === null) {
+        todos = [];
+    } else {
+        todos = JSON.parse(localStorage.getItem("todos"));
+    }
+    return todos;
+}
+
+function addToLocale(newValue) {
+    let todos = getFromLocale();
+    todos.push(newValue);
+    localStorage.setItem("todos", JSON.stringify(todos));
 }
